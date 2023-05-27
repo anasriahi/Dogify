@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
+    kotlin("plugin.serialization") version "1.6.10"
 }
 
 kotlin {
@@ -22,7 +23,7 @@ kotlin {
         val koinVersion = "3.1.4"
         val commonMain by getting {
             dependencies {
-                implementation("io.insert-koin:koin-core:3.1.2")
+                implementation("io.insert-koin:koin-core:$koinVersion")
                 // Ktor
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-json:$ktorVersion")
@@ -32,6 +33,7 @@ kotlin {
 
                 // Serialization
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
+
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt") {
                     version {
                         strictly("1.6.0-native-mt")
