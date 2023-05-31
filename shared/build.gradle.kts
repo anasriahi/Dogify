@@ -1,19 +1,27 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
     kotlin("plugin.serialization") version "1.6.10"
+    id("com.squareup.sqldelight")
+    id("com.rickclephas.kmp.nativecoroutines") version "0.11.1"
 }
 
 kotlin {
     android()
-    
-    listOf(
-        iosX64(),
-        iosArm64(),
-        //iosSimulatorArm64() sure all ios dependencies support this target
-    ).forEach {
-        it.binaries.framework {
-            baseName = "shared"
+
+    val iosTarget: (String, KotlinNativeTarget.() -> Unit) -> KotlinNativeTarget = when {
+        System.getenv("SDK_NAME")?.startsWith("iphoneos") == true -> ::iosArm64
+        System.getenv("NATIVE_ARCH")?.startsWith("arm") == true -> ::iosSimulatorArm64
+        else -> ::iosX64
+    }
+
+    iosTarget("ios") {
+        binaries {
+            framework {
+                baseName = "shared"
+            }
         }
     }
 
@@ -63,29 +71,13 @@ kotlin {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val iosX64Main by getting {
+        val iosMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-ios:$ktorVersion")
                 implementation("com.squareup.sqldelight:native-driver:$sqlDelightVersion")
             }
         }
-        val iosArm64Main by getting
-        //val iosSimulatorArm64Main by getting
-        val iosMain by creating {
-            dependsOn(commonMain)
-            iosX64Main.dependsOn(this)
-            iosArm64Main.dependsOn(this)
-            //iosSimulatorArm64Main.dependsOn(this)
-        }
-        val iosX64Test by getting
-        val iosArm64Test by getting
-        //val iosSimulatorArm64Test by getting
-        val iosTest by creating {
-            dependsOn(commonTest)
-            iosX64Test.dependsOn(this)
-            iosArm64Test.dependsOn(this)
-            //iosSimulatorArm64Test.dependsOn(this)
-        }
+        val iosTest by getting
     }
 }
 
@@ -95,5 +87,12 @@ android {
     defaultConfig {
         minSdk = 23
         targetSdk = 31
+    }
+}
+
+sqldelight {
+    database("DogifyDatabase") {
+        packageName = "com.riahi.dogify.db"
+        sourceFolders = listOf("sqldelight")
     }
 }
