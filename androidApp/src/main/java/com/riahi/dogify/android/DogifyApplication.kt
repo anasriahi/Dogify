@@ -9,6 +9,7 @@ class DogifyApplication : Application() {
         super.onCreate()
         initKoin {
             androidContext(this@DogifyApplication)
+            modules(viewModelModule)
         }
     }
 }
